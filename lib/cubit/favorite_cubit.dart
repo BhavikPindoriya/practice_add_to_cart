@@ -1,46 +1,29 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:bloc/bloc.dart';
 import 'package:practice_add_to_cart/data/model/favorite_model.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:practice_add_to_cart/data/model/product_model.dart';
 
-abstract class Favoritestate {}
+class FavoritesState {
+  final List<Product> favoriteProducts;
 
-class FavoriteInitState extends Favoritestate {}
+  FavoritesState({required this.favoriteProducts});
 
-class FavoriteInProgressState extends Favoritestate {}
-
-class FavoriteInSuccessState extends Favoritestate {
-  List<FavoriteModel> favoriteproduct;
-  FavoriteInSuccessState({
-    required this.favoriteproduct,
-  });
+  FavoritesState copyWith({List<Product>? favoriteProducts}) {
+    return FavoritesState(
+        favoriteProducts: favoriteProducts ?? this.favoriteProducts);
+  }
 }
 
-class FavoriteInErrorState extends Favoritestate {
-  String error;
-  FavoriteInErrorState({
-    required this.error,
-  });
-}
+class FavoritesCubit extends Cubit<FavoritesState> {
+  FavoritesCubit() : super(FavoritesState(favoriteProducts: []));
 
-class FavoriteCubit extends Cubit<Favoritestate> {
-  FavoriteCubit() : super(FavoriteInitState());
+  void addFavorite(Product product) {
+    final updatedFavorites = List<Product>.from(state.favoriteProducts)
+      ..add(product);
+    emit(state.copyWith(favoriteProducts: updatedFavorites));
+  }
 
-  void addFavoritelist(ProductModel product) {
-    try {
-      List<FavoriteModel> favoriteproduct = [];
-
-      favoriteproduct.add(
-        FavoriteModel(
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            pic: product.pic),
-      );
-      emit(FavoriteInSuccessState(favoriteproduct: favoriteproduct));
-      print("add the favorite list$favoriteproduct");
-    } catch (e) {
-      emit(FavoriteInErrorState(error: e.toString()));
-    }
+  void removeFavorite(Product product) {
+    final updatedFavorites = List<Product>.from(state.favoriteProducts)
+      ..remove(product);
+    emit(state.copyWith(favoriteProducts: updatedFavorites));
   }
 }

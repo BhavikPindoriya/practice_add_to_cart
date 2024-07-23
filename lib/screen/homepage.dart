@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:practice_add_to_cart/cubit/favorite_cubit.dart';
-import 'package:practice_add_to_cart/data/model/favorite_model.dart';
 import 'package:practice_add_to_cart/data/repository/product_list.dart';
 import 'package:practice_add_to_cart/screen/favoriteScreen.dart';
 
@@ -13,7 +12,6 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  bool infavoriteList = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,9 +20,9 @@ class _HomepageState extends State<Homepage> {
           GestureDetector(
             onTap: () {
               Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const FavoriteList()));
+                context,
+                MaterialPageRoute(builder: (context) => const FavoriteList()),
+              );
             },
             child: const Icon(Icons.favorite),
           )
@@ -38,6 +36,7 @@ class _HomepageState extends State<Homepage> {
               shrinkWrap: true,
               itemCount: Const.product.length,
               itemBuilder: (context, index) {
+                final product = Const.product[index];
                 return GestureDetector(
                   onTap: () {},
                   child: Padding(
@@ -54,123 +53,75 @@ class _HomepageState extends State<Homepage> {
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(50)),
                                 child: Image.network(
-                                    fit: BoxFit.fill,
-                                    Const.product[index].pic.toString()),
+                                  fit: BoxFit.fill,
+                                  product.pic.toString(),
+                                ),
                               ),
                             ),
                             title: Text(
-                              Const.product[index].name.toString(),
+                              product.name.toString(),
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
                             subtitle: Text(
-                              "Price :- ${Const.product[index].price}",
+                              "Price :- ${product.price}",
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                BlocBuilder<FavoriteCubit, Favoritestate>(
+                                BlocBuilder<FavoritesCubit, FavoritesState>(
                                   builder: (context, state) {
-                                    return Container(
-                                      child: IconButton(
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) => AlertDialog(
-                                              content: const Text(
-                                                  'Click ok button to add the favorite'),
-                                              actions: [
-                                                ElevatedButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: const SizedBox(
-                                                    child: Text("Cancel"),
-                                                  ),
-                                                ),
-                                                ElevatedButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
+                                    final isFavorite = state.favoriteProducts
+                                        .any((favProduct) =>
+                                            favProduct.id == product.id);
 
+                                    return IconButton(
+                                      onPressed: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            content: const Text(
+                                                'Click ok button to add the favorite'),
+                                            actions: [
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                child: const Text("Cancel"),
+                                              ),
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                  if (isFavorite) {
                                                     context
-                                                        .read<FavoriteCubit>()
-                                                        .addFavoritelist(Const
-                                                            .product[index]);
-                                                  },
-                                                  child: const SizedBox(
-                                                    child: Text("okay"),
-                                                  ),
-                                                )
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                        icon: Icon(
-                                          infavoriteList == true
-                                              ? Icons.favorite
-                                              : Icons.favorite_border_sharp,
-                                          color: infavoriteList == true
-                                              ? Colors.amber
-                                              : Colors.black,
-                                        ),
+                                                        .read<FavoritesCubit>()
+                                                        .removeFavorite(
+                                                            product);
+                                                  } else {
+                                                    context
+                                                        .read<FavoritesCubit>()
+                                                        .addFavorite(product);
+                                                  }
+                                                },
+                                                child: const Text("Okay"),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                      icon: Icon(
+                                        isFavorite
+                                            ? Icons.favorite
+                                            : Icons.favorite_border_sharp,
+                                        color: isFavorite
+                                            ? Colors.red
+                                            : Colors.black,
                                       ),
                                     );
                                   },
                                 ),
-                                // BlocBuilder<CartCubit, CartState>(
-                                //   builder: (context, state) {
-                                //     bool inWishList = context
-                                //         .read<CartCubit>()
-                                //         .isProductInCart(
-                                //             foundproduct[index].id);
-                                //     return Container(
-                                //       child: IconButton(
-                                //         onPressed: () {
-                                //           showDialog(
-                                //             context: context,
-                                //             builder: (context) => AlertDialog(
-                                //               content: const Text(
-                                //                   'Click ok button to add the Cart'),
-                                //               actions: [
-                                //                 ElevatedButton(
-                                //                   onPressed: () {
-                                //                     Navigator.pop(context);
-                                //                   },
-                                //                   child: const SizedBox(
-                                //                     child: Text("Cancel"),
-                                //                   ),
-                                //                 ),
-                                //                 ElevatedButton(
-                                //                   onPressed: () {
-                                //                     print(
-                                //                         "this is the inwhichList in cart :-$inWishList");
-                                //                     Navigator.pop(context);
-
-                                //                     context
-                                //                         .read<CartCubit>()
-                                //                         .addCartList(
-                                //                             product:
-                                //                                 foundproduct[
-                                //                                     index]);
-                                //                   },
-                                //                   child: const SizedBox(
-                                //                     child: Text("okay"),
-                                //                   ),
-                                //                 )
-                                //               ],
-                                //             ),
-                                //           );
-                                //         },
-                                //         icon: Icon(Icons.add_shopping_cart,
-                                //             color: inWishList == true
-                                //                 ? Colors.amber
-                                //                 : Colors.black),
-                                //       ),
-                                //     );
-                                //   },
-                                // ),
                               ],
                             ),
                           ),
